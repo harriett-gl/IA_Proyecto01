@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador de Tickets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Clasificador de Solicitudes</h1>
+        <p>Ingresa un texto y el sistema predecirá su categoría.</p>
+
+        <form method="POST">
+            <input type="text" name="ticket_id" placeholder="Ticket ID (auto)" readonly value="{{ range(1000,9999)|random }}">
+            <input type="text" name="subject" placeholder="Asunto del problema" required>
+            <textarea name="texto" placeholder="Describe el problema..." required>{{ texto_ingresado }}</textarea>
+            <button type="submit">Clasificar</button>
+        </form>
+
+        {% if prediccion %}
+        <div class="resultado">
+            <h2>Clasificación del Ticket</h2>
+            <p class="categoria">{{ prediccion }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
