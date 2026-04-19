@@ -1,63 +1,63 @@
-````markdown
-# 🎫 Proyecto 01 - Clasificador Inteligente de Solicitudes
+# 📌 Proyecto 01 – Clasificador Inteligente de Solicitudes
 
-## 🏫 Universidad Rafael Landívar  
-📘 **Curso:** Inteligencia Artificial  
-📅 **Primer Semestre 2026**
-
----
+## 🎓 Universidad Rafael Landívar
+**Curso:** Inteligencia Artificial  
+**Semestre:** Primer Semestre 2026
 
 ## 👥 Integrantes
-
-- Harriett Guzmán  
-- [Agregar nombres del grupo]
+- Harriett Guzmán
+- Alejandro Ramos
 
 ---
 
-# 📌 Descripción General
+# 📖 Descripción General
 
-Este proyecto consiste en el desarrollo de un sistema inteligente capaz de clasificar automáticamente solicitudes de clientes dirigidas a una mesa de ayuda, utilizando el algoritmo **Naïve Bayes Multinomial**, implementado desde cero en Python.
+Este proyecto consiste en el desarrollo de un sistema inteligente capaz de clasificar automáticamente solicitudes de clientes dirigidas a una mesa de ayuda.
 
-El sistema recibe un texto escrito por el usuario y determina a qué categoría pertenece la solicitud, automatizando el proceso de atención y asignación de tickets.
+El sistema recibe un texto escrito por el usuario y determina a qué categoría pertenece la solicitud.
 
 ---
 
 # 🎯 Objetivo del Proyecto
 
-Aplicar conceptos fundamentales de Inteligencia Artificial y Procesamiento de Lenguaje Natural:
+Aplicar conceptos fundamentales de Inteligencia Artificial:
 
-✅ Clasificación de texto  
-✅ Preprocesamiento de datos  
-✅ Bag of Words  
-✅ Naïve Bayes  
-✅ Laplace Smoothing  
-✅ K-Fold Cross Validation  
-✅ Desarrollo Web con Flask
+- ✅ Clasificación de texto
+- ✅ Preprocesamiento de datos
+- ✅ Bag of Words
+- ✅ Naive Bayes
+- ✅ Flask
 
 ---
 
-# 🗂️ Categorías Detectadas
+# 📂 Categorías del Sistema
 
-El sistema clasifica tickets en:
-
-🔧 Soporte Técnico  
-💳 Facturación  
-❌ Cancelación  
-⚠️ Queja  
+- 🛠️ Soporte Técnico
+- 💳 Facturación
+- ❌ Cancelación
+- ⚠️ Quejas
 
 ---
 
 # 🛠️ Tecnologías Utilizadas
 
-- 🐍 Python 3  
-- 🌐 Flask  
-- 🎨 HTML5  
-- 💅 CSS3  
-- ⚙️ JavaScript básico  
-- 💾 Pickle  
+- 🐍 Python
+- 🌐 Flask
+- 🎨 HTML
+- 🎨 CSS
+- ⚙️ JavaScript
 
 ---
 
+# 🚀 Instalación y Ejecución
+
+## 1️⃣ Instalar Flask
+
+```bash
+pip install flask
+
+---
+````markdown
 # 📁 Estructura del Proyecto
 
 ```text
@@ -85,8 +85,6 @@ Proyecto 01/
     └── templates/
         └── index.html
 ````
-
----
 
 # ⚙️ ¿Cómo Funciona?
 
