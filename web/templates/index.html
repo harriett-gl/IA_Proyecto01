@@ -21,7 +21,7 @@
             </div>
 
             <h1>Clasificador de Solicitudes</h1>
-            <p class="subtitle">Ingresa un texto y el sistema predecirá su categoría.</p>
+            <p class="subtitle">Ingresa el asunto y la descripción del ticket para predecir su categoría.</p>
 
             <form method="POST" class="formulario">
                 <input
@@ -56,54 +56,28 @@
             <div class="resultado">
                 <span class="resultado-label">Resultado</span>
                 <span class="resultado-valor">{{ prediccion }}</span>
+                <span class="resultado-confianza">Confianza estimada: {{ confianza }}%</span>
             </div>
             {% endif %}
 
             {% if probabilidades %}
             <div class="resultado" style="margin-top:20px;">
-                <span class="resultado-label">📊 Confianza por Categoría</span>
+                <span class="resultado-label">📊 Porcentaje de fiabilidad por categoría</span>
 
                 {% for categoria, porcentaje in probabilidades.items() %}
-                <div style="margin-top:14px;">
-
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                        <span>
-                            {% if categoria == "ACCOUNT" %}👤 Cuenta{% endif %}
-                            {% if categoria == "CANCEL" %}❌ Cancelación{% endif %}
-                            {% if categoria == "CONTACT" %}📞 Contacto{% endif %}
-                            {% if categoria == "DELIVERY" %}🚚 Entrega{% endif %}
-                            {% if categoria == "FEEDBACK" %}⭐ Feedback{% endif %}
-                            {% if categoria == "INVOICE" %}🧾 Factura{% endif %}
-                            {% if categoria == "ORDER" %}📦 Órdenes{% endif %}
-                            {% if categoria == "PAYMENT" %}💳 Pagos{% endif %}
-                            {% if categoria == "REFUND" %}💰 Reembolsos{% endif %}
-                            {% if categoria == "SHIPPING" %}🚛 Envíos{% endif %}
-                            {% if categoria == "SUBSCRIPTION" %}📑 Suscripción{% endif %}
-                        </span>
-
+                <div class="prob-item">
+                    <div class="prob-head">
+                        <span>{{ categoria }}</span>
                         <span>{{ porcentaje }}%</span>
                     </div>
 
-                    <div style="
-                        width:100%;
-                        height:10px;
-                        background:#2a3655;
-                        border-radius:20px;
-                        overflow:hidden;
-                    ">
-                        <div style="
-                            width:{{ porcentaje }}%;
-                            height:100%;
-                            background:linear-gradient(90deg,#2f6fff,#d228d9);
-                            border-radius:20px;
-                        "></div>
+                    <div class="prob-barra">
+                        <div class="prob-fill" style="width:{{ porcentaje }}%;"></div>
                     </div>
-
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
-
         </section>
     </main>
 </body>

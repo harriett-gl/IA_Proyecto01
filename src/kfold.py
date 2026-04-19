@@ -1,31 +1,37 @@
 import random
+from collections import defaultdict
+
 from src.naive_bayes import NaiveBayes
-from src.metrics import accuracy_score
+from src.metrics import (
+    accuracy_score,
+    macro_f1_score,
+    precision_recall_f1_per_class,
+)
 
 
-def kfold_split(X, y, k=5, seed=42):
-    datos = list(zip(X, y))
+def kfold_split_estratificado(X, y, k=5, seed=42):
     random.seed(seed)
-    random.shuffle(datos)
+    indices_por_clase = defaultdict(list)
 
-    n = len(datos)
-    fold_size = n // k
-    sobrante = n % k
+    for i, etiqueta in enumerate(y):
+        indices_por_clase[etiqueta].append(i)
+
+    folds_indices = [[] for _ in range(k)]
+
+    for _, indices in indices_por_clase.items():
+        random.shuffle(indices)
+        for posicion, indice in enumerate(indices):
+            folds_indices[posicion % k].append(indice)
 
     folds = []
-    inicio = 0
-
-    for i in range(k):
-        extra = 1 if i < sobrante else 0
-        fin = inicio + fold_size + extra
-        folds.append(datos[inicio:fin])
-        inicio = fin
+    for fold in folds_indices:
+        folds.append([(X[i], y[i]) for i in fold])
 
     return folds
 
 
-def evaluate_kfold(X, y, vocabulario, classes, k=5):
-    folds = kfold_split(X, y, k)
+def evaluate_kfold(X, y, vocabulario, classes, k=5, alpha=1.0, seed=42):
+    folds = kfold_split_estratificado(X, y, k=k, seed=seed)
     resultados = []
 
     for i in range(k):
@@ -36,21 +42,29 @@ def evaluate_kfold(X, y, vocabulario, classes, k=5):
             if j != i:
                 train_folds.extend(folds[j])
 
-        X_train = [x for x, label in train_folds]
-        y_train = [label for x, label in train_folds]
+        X_train = [x for x, _ in train_folds]
+        y_train = [label for _, label in train_folds]
+        X_test = [x for x, _ in test_fold]
+        y_test = [label for _, label in test_fold]
 
-        X_test = [x for x, label in test_fold]
-        y_test = [label for x, label in test_fold]
-
-        modelo = NaiveBayes()
+        modelo = NaiveBayes(alpha=alpha)
         modelo.entrenar(X_train, y_train, vocabulario)
 
         y_pred = [modelo.predecir(x) for x in X_test]
-        acc = accuracy_score(y_test, y_pred)
 
         resultados.append({
             "fold": i + 1,
-            "accuracy": acc
+            "accuracy": accuracy_score(y_test, y_pred),
+            "macro_f1": macro_f1_score(y_test, y_pred, classes),
+            "per_class": precision_recall_f1_per_class(y_test, y_pred, classes),
         })
 
-    return resultados
+    promedio_accuracy = sum(r["accuracy"] for r in resultados) / len(resultados)
+    promedio_macro_f1 = sum(r["macro_f1"] for r in resultados) / len(resultados)
+
+    return {
+        "folds": resultados,
+        "average_accuracy": promedio_accuracy,
+        "average_macro_f1": promedio_macro_f1,
+    }
+

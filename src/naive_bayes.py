@@ -1,66 +1,82 @@
 import math
 import pickle
-from collections import defaultdict
 
 
 class NaiveBayes:
-    def __init__(self):
-        self.clases = set()
+    def __init__(self, alpha=1.0):
+        self.alpha = alpha
+        self.clases = []
         self.vocabulario = {}
         self.prior = {}
-        self.likelihood = {}
+        self.conteo_palabras = {}
         self.total_palabras_clase = {}
         self.tamano_vocabulario = 0
 
     def entrenar(self, X, y, vocabulario):
-        self.clases = set(y)
+        self.clases = sorted(list(set(y)))
         self.vocabulario = vocabulario
         self.tamano_vocabulario = len(vocabulario)
 
-        conteo_clases = defaultdict(int)
-        conteo_palabras = {
-            clase: [0] * self.tamano_vocabulario for clase in self.clases
-        }
+        conteo_clases = {clase: 0 for clase in self.clases}
+        self.conteo_palabras = {clase: {} for clase in self.clases}
+        self.total_palabras_clase = {clase: 0 for clase in self.clases}
 
-        for i in range(len(X)):
-            clase = y[i]
+        for vector, clase in zip(X, y):
             conteo_clases[clase] += 1
 
-            for j in range(len(X[i])):
-                conteo_palabras[clase][j] += X[i][j]
+            for indice, frecuencia in vector.items():
+                self.conteo_palabras[clase][indice] = (
+                    self.conteo_palabras[clase].get(indice, 0) + frecuencia
+                )
+                self.total_palabras_clase[clase] += frecuencia
 
         total_docs = len(y)
-        for clase in self.clases:
-            self.prior[clase] = conteo_clases[clase] / total_docs
+        self.prior = {
+            clase: conteo_clases[clase] / total_docs
+            for clase in self.clases
+        }
 
-        for clase in self.clases:
-            self.total_palabras_clase[clase] = sum(conteo_palabras[clase])
+    def _log_probabilidad_clase(self, vector, clase):
+        log_prob = math.log(self.prior[clase])
+        denominador = (
+            self.total_palabras_clase[clase] +
+            self.alpha * self.tamano_vocabulario
+        )
 
-        self.likelihood = {}
-        for clase in self.clases:
-            self.likelihood[clase] = []
+        for indice, frecuencia in vector.items():
+            numerador = self.conteo_palabras[clase].get(indice, 0) + self.alpha
+            log_prob += frecuencia * math.log(numerador / denominador)
 
-            for j in range(self.tamano_vocabulario):
-                prob = (
-                    conteo_palabras[clase][j] + 1
-                ) / (
-                    self.total_palabras_clase[clase] + self.tamano_vocabulario
-                )
-                self.likelihood[clase].append(prob)
+        return log_prob
+
+    def predecir_probabilidades(self, vector):
+        puntajes = {
+            clase: self._log_probabilidad_clase(vector, clase)
+            for clase in self.clases
+        }
+
+        max_log = max(puntajes.values())
+        exp_scores = {
+            clase: math.exp(valor - max_log)
+            for clase, valor in puntajes.items()
+        }
+        suma_exp = sum(exp_scores.values())
+
+        return {
+            clase: exp_scores[clase] / suma_exp
+            for clase in self.clases
+        }
 
     def predecir(self, vector):
-        resultados = {}
+        probabilidades = self.predecir_probabilidades(vector)
+        mejor_clase = max(probabilidades, key=probabilidades.get)
+        return mejor_clase
 
-        for clase in self.clases:
-            log_prob = math.log(self.prior[clase])
-
-            for i in range(len(vector)):
-                if vector[i] > 0:
-                    log_prob += vector[i] * math.log(self.likelihood[clase][i])
-
-            resultados[clase] = log_prob
-
-        return max(resultados, key=resultados.get)
+    def predecir_con_confianza(self, vector):
+        probabilidades = self.predecir_probabilidades(vector)
+        mejor_clase = max(probabilidades, key=probabilidades.get)
+        confianza = probabilidades[mejor_clase] * 100
+        return mejor_clase, round(confianza, 2), probabilidades
 
     def guardar_modelo(self, ruta):
         with open(ruta, "wb") as archivo:
