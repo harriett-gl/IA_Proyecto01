@@ -57,7 +57,6 @@ Aplicar conceptos fundamentales de Inteligencia Artificial:
 pip install flask
 
 ---
-````markdown
 # 📁 Estructura del Proyecto
 
 ```text
