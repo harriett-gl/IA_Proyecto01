@@ -23,3 +23,4 @@ if __name__ == "__main__":
     resultado = predecir_texto(texto)
     print("Texto:", texto)
     print("Predicción:", resultado)
+    

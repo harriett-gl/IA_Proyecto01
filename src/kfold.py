@@ -1,20 +1,5 @@
 import random
 from src.naive_bayes import NaiveBayes
-
-def kfold_split(X, y, k=5):
-    datos = list(zip(X, y))
-    random.shuffle(datos)
-
-    tamaño_fold = len(datos) // k
-    folds = []
-
-    for i in range(k):
-        inicio = i * tamaño_fold
-        fin = inicio + tamaño_fold
-        folds.append(datos[inicio:fin])
-
-    return folds
-
 from src.metrics import (
     accuracy_score,
     precision_recall_f1_per_class,
@@ -22,7 +7,28 @@ from src.metrics import (
     confusion_matrix
 )
 
-def evaluate_kfold(X, y, classes, k=5):
+def kfold_split(X, y, k=5, seed=42):
+    datos = list(zip(X, y))
+    random.seed(seed)
+    random.shuffle(datos)
+
+    n = len(datos)
+    fold_size = n // k
+    sobrante = n % k
+
+    folds = []
+    inicio = 0
+
+    for i in range(k):
+        extra = 1 if i < sobrante else 0
+        fin = inicio + fold_size + extra
+        folds.append(datos[inicio:fin])
+        inicio = fin
+
+    return folds
+
+
+def evaluate_kfold(X, y, vocabulario, classes, k=5):
     folds = kfold_split(X, y, k)
 
     resultados = []
@@ -42,9 +48,9 @@ def evaluate_kfold(X, y, classes, k=5):
         y_test = [label for x, label in test_fold]
 
         modelo = NaiveBayes()
-        modelo.fit(X_train, y_train)
+        modelo.entrenar(X_train, y_train, vocabulario)
 
-        y_pred = [modelo.predict(x) for x in X_test]
+        y_pred = [modelo.predecir(x) for x in X_test]
 
         acc = accuracy_score(y_test, y_pred)
         per_class = precision_recall_f1_per_class(y_test, y_pred, classes)
