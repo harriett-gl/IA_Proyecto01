@@ -12,30 +12,30 @@
 
 # 📖 Descripción General
 
-Este proyecto consiste en el desarrollo de un sistema inteligente capaz de clasificar automáticamente solicitudes de clientes dirigidas a una mesa de ayuda.
+Este proyecto implementa un clasificador de texto para solicitudes de mesa de ayuda usando **Naïve Bayes Multinomial desarrollado desde cero**, sin depender de bibliotecas que resuelvan la clasificación automáticamente.
 
-El sistema recibe un texto escrito por el usuario y determina a qué categoría pertenece la solicitud.
-
----
-
-# 🎯 Objetivo del Proyecto
-
-Aplicar conceptos fundamentales de Inteligencia Artificial:
-
-- ✅ Clasificación de texto
-- ✅ Preprocesamiento de datos
-- ✅ Bag of Words
-- ✅ Naive Bayes
-- ✅ Flask
+Ahora el sistema fue actualizado para usar el dataset **Bitext Customer Support**, que sí contiene etiquetas coherentes entre el texto y su categoría, tal como pide el proyecto del curso. Esto mejora drásticamente la calidad de predicción frente al dataset anterior.
 
 ---
 
-# 📂 Categorías del Sistema
+# ✅ Dataset Utilizado
 
-- 🛠️ Soporte Técnico
-- 💳 Facturación
-- ❌ Cancelación
-- ⚠️ Quejas
+**Archivo usado:** `bitext_customer_support.csv`  
+**Total de registros:** 26872  
+**Número de categorías:** 11
+
+## Categorías del modelo
+- ACCOUNT
+- CANCEL
+- CONTACT
+- DELIVERY
+- FEEDBACK
+- INVOICE
+- ORDER
+- PAYMENT
+- REFUND
+- SHIPPING
+- SUBSCRIPTION
 
 ---
 
@@ -45,37 +45,104 @@ Aplicar conceptos fundamentales de Inteligencia Artificial:
 - 🌐 Flask
 - 🎨 HTML
 - 🎨 CSS
-- ⚙️ JavaScript
+- 🧠 Naïve Bayes Multinomial
+- 📊 Validación K-Fold manual
+- 💾 Pickle para guardar el modelo
 
 ---
 
-# 🚀 Instalación y Ejecución
+# 🧹 Preprocesamiento Aplicado
 
-## 1️⃣ Instalar Flask
+El texto pasa por varias etapas antes de clasificarse:
 
-```bash
-pip install flask
+- Conversión a minúsculas
+- Eliminación de placeholders como `{Order Number}`
+- Eliminación de caracteres especiales
+- Normalización de acentos
+- Eliminación de stopwords en inglés y español
+- Stemming simple
+- Generación de bigramas
+- Normalización básica de términos frecuentes en español hacia tokens útiles del modelo
+
+Esto permite que el sistema trabaje mejor con entradas reales de usuario y con el dataset actualizado.
 
 ---
+
+# 📊 Representación del Texto
+
+Se utiliza la técnica **Bag of Words** construida manualmente.
+
+Además, se aplica un filtro de frecuencia mínima para evitar ruido en el vocabulario.
+
+**Tamaño final del vocabulario:** 5058 palabras
+
+---
+
+# 🧠 Algoritmo Utilizado
+
+## Naïve Bayes Multinomial
+
+El modelo calcula:
+
+- Probabilidades a priori por clase
+- Probabilidades condicionales por palabra
+- Laplace Smoothing
+- Suma de logaritmos para evitar underflow numérico
+
+También se añadió el cálculo de **probabilidades normalizadas por clase**, para mostrar en la web el porcentaje de confianza o fiabilidad de cada predicción.
+
+---
+
+# 📈 Resultados del Modelo
+
+## Evaluación K-Fold manual
+- **Accuracy promedio:** 99.43%
+- **Macro F1 promedio:** 99.43%
+
+## Evaluación Holdout
+- **Accuracy holdout:** 99.57%
+- **Macro F1 holdout:** 99.53%
+
+## Conclusión de rendimiento
+Con el dataset actualizado y las mejoras aplicadas, el sistema supera el **99% de accuracy**, por lo que el cambio de dataset sí resolvió el problema principal de calidad del modelo.
+
+---
+
+# 🌐 Funcionalidades de la Web
+
+La aplicación web permite:
+
+- Generar un ID de ticket automáticamente
+- Ingresar asunto
+- Ingresar descripción del problema
+- Clasificar el ticket en tiempo real
+- Mostrar la **categoría predicha**
+- Mostrar el **porcentaje de fiabilidad**
+- Mostrar la **distribución de probabilidades por categoría**
+
+---
+
 # 📁 Estructura del Proyecto
 
 ```text
 Proyecto 01/
 │
 ├── app.py
-├── main.py
+├── train.py
+├── bitext_customer_support.csv
 ├── README.md
 │
 ├── model/
-│   └── naive_bayes_model.pkl
+│   ├── naive_bayes_model.pkl
+│   └── metrics.json
 │
 ├── src/
+│   ├── __init__.py
 │   ├── preprocessing.py
 │   ├── vectorizer.py
 │   ├── naive_bayes.py
 │   ├── metrics.py
 │   ├── kfold.py
-│   ├── train.py
 │   └── predict.py
 │
 └── web/
@@ -83,207 +150,100 @@ Proyecto 01/
     │   └── style.css
     └── templates/
         └── index.html
-````
-
-# ⚙️ ¿Cómo Funciona?
-
-## 🧹 1. Preprocesamiento
-
-Cada texto ingresado pasa por:
-
-* Conversión a minúsculas
-* Eliminación de símbolos
-* Tokenización
-* Eliminación de palabras vacías
-* Stemming básico
-
----
-
-## 📊 2. Vectorización
-
-El texto se convierte en números usando **Bag of Words**.
-
-Ejemplo:
-
-```text
-internet no funciona
 ```
-
-↓
-
-```text
-[1,0,2,1,0]
-```
-
----
-
-## 🧠 3. Clasificación
-
-Se utiliza el algoritmo **Naïve Bayes** para calcular la categoría más probable.
-
----
-
-## 🌐 4. Interfaz Web
-
-El usuario puede:
-
-✅ Ingresar ticket
-✅ Escribir asunto
-✅ Describir problema
-✅ Obtener respuesta automática
-
----
-
-# 📐 Algoritmo Utilizado
-
-## Naïve Bayes Multinomial
-
-```text
-P(clase|texto) = P(clase) * P(palabras|clase)
-```
-
-Incluye:
-
-✅ Laplace Smoothing
-✅ Logaritmos para evitar underflow
-✅ Probabilidades por categoría
 
 ---
 
 # 🚀 Instalación y Ejecución
 
-## 1️⃣ Instalar Flask
+## 1️⃣ Instalar dependencias
 
 ```bash
-pip install flask
+pip install flask pandas
 ```
 
----
-
-## 2️⃣ Entrenar Modelo
+## 2️⃣ Entrenar el modelo con el dataset nuevo
 
 ```bash
-python -m src.train
+python train.py
 ```
 
----
+Esto generará:
 
-## 3️⃣ Ejecutar Página Web
+- `model/naive_bayes_model.pkl`
+- `model/metrics.json`
+
+## 3️⃣ Ejecutar la aplicación web
 
 ```bash
 python app.py
 ```
 
----
-
-## 4️⃣ Abrir Navegador
-
-🔗 [http://127.0.0.1:5001](http://127.0.0.1:5001)
-
----
-
-# 💡 Ejemplos de Uso
-
-## Entrada:
+## 4️⃣ Abrir en el navegador
 
 ```text
-No tengo internet desde ayer
-```
-
-## Resultado:
-
-```text
-🔧 Soporte Técnico
+http://127.0.0.1:5001
 ```
 
 ---
 
-## Entrada:
+# 💡 Ejemplos de uso
 
-```text
-Me cobraron dos veces este mes
-```
+## Entrada
+**Asunto:** Refund request  
+**Descripción:** I want my money back because I returned the item.
 
-## Resultado:
-
-```text
-💳 Facturación
-```
+## Salida esperada
+- Categoría: `REFUND`
+- Confianza: porcentaje mostrado por la web
 
 ---
 
-## Entrada:
+## Entrada
+**Asunto:** Late package  
+**Descripción:** My package has not arrived and the tracking has not changed.
 
-```text
-Quiero cancelar mi cuenta
-```
-
-## Resultado:
-
-```text
-❌ Cancelación
-```
+## Salida esperada
+- Categoría: `SHIPPING` o `DELIVERY`
 
 ---
 
-## Entrada:
+## Entrada
+**Asunto:** Wrong invoice  
+**Descripción:** I was charged the wrong amount on my invoice.
 
-```text
-Muy mala atención del agente
-```
-
-## Resultado:
-
-```text
-⚠️ Queja
-```
+## Salida esperada
+- Categoría: `INVOICE` o `PAYMENT`
 
 ---
 
-# 📈 Evaluación del Modelo
+# ⭐ Mejoras realizadas en esta actualización
 
-Se implementó validación cruzada **K-Fold** para medir:
-
-📌 Accuracy
-📌 Precision
-📌 Recall
-📌 F1 Score
-📌 Macro F1
-
----
-
-# ⭐ Ventajas del Sistema
-
-✅ Automatiza tickets
-✅ Reduce tiempo de respuesta
-✅ Fácil de usar
-✅ Código propio
-✅ Escalable
-
----
-
-# 🔮 Mejoras Futuras
-
-* Más categorías
-* Dataset real grande
-* Dashboard administrativo
-* API REST
-* Base de datos
-* Estadísticas en tiempo real
+- Se reemplazó el dataset anterior por uno semánticamente correcto
+- Se actualizó el entrenamiento para leer el archivo CSV local
+- Se mejoró el preprocesamiento
+- Se cambió la vectorización a una forma más eficiente
+- Se añadió cálculo de probabilidades por clase
+- Se añadió porcentaje de fiabilidad en la interfaz web
+- Se agregaron métricas reales guardadas en `metrics.json`
+- Se actualizó el README con resultados actuales
 
 ---
 
 # 🏁 Conclusión
 
-Este proyecto demuestra cómo aplicar Inteligencia Artificial real mediante clasificación automática de texto usando fundamentos matemáticos sólidos y una interfaz moderna.
+Este proyecto ahora cumple mejor con los requisitos del curso, porque:
 
-Representa una solución útil para empresas que manejan grandes volúmenes de solicitudes.
+- usa un dataset adecuado,
+- mantiene la implementación manual del modelo,
+- evalúa el sistema con K-Fold,
+- guarda el modelo entrenado,
+- y muestra resultados entendibles para el usuario final.
+
+La actualización permitió obtener un clasificador mucho más confiable y visualmente más completo.
 
 ---
 
 # 👨‍💻 Autoría
 
-Proyecto académico desarrollado para el curso de Inteligencia Artificial - Universidad Rafael Landívar.
-
-```
-```
+Proyecto académico desarrollado para el curso de Inteligencia Artificial – Universidad Rafael Landívar.
