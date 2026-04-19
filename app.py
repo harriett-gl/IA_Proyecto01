@@ -1,59 +1,50 @@
-from pathlib import Path
-import sys
+from flask import Flask, render_template, request
+from datetime import datetime
 import random
 
-from flask import Flask, render_template, request
-
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
-
-from src.predict import predecir_texto
+from src.predict import predecir_texto, obtener_categorias_modelo
 
 app = Flask(
     __name__,
-    template_folder=str(BASE_DIR / "web" / "templates"),
-    static_folder=str(BASE_DIR / "web" / "static")
+    template_folder="web/templates",
+    static_folder="web/static"
 )
 
-
 def generar_ticket_id():
-    return random.randint(1000, 9999)
-
+    fecha = datetime.now().strftime("%Y%m%d")
+    aleatorio = random.randint(1000, 9999)
+    return f"TKT-{fecha}-{aleatorio}"
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+
     prediccion = None
-    texto_ingresado = ""
-    asunto_ingresado = ""
     ticket_id = generar_ticket_id()
 
+    asunto_ingresado = ""
+    texto_ingresado = ""
+
+    categorias = obtener_categorias_modelo()
+
     if request.method == "POST":
-        ticket_id = generar_ticket_id()
+
         asunto_ingresado = request.form.get("asunto", "")
         texto_ingresado = request.form.get("texto", "")
 
-        texto_completo = f"{asunto_ingresado} {texto_ingresado}".strip()
+        texto_completo = asunto_ingresado + " " + texto_ingresado
 
-        if texto_completo:
+        if texto_completo.strip():
             prediccion = predecir_texto(texto_completo)
-
-            if prediccion == "soporte":
-                prediccion = "Soporte Técnico"
-            elif prediccion == "facturacion":
-                prediccion = "Facturación"
-            elif prediccion == "cancelacion":
-                prediccion = "Cancelación"
-            elif prediccion == "queja":
-                prediccion = "Queja"
 
     return render_template(
         "index.html",
+        ticket_id=ticket_id,
         prediccion=prediccion,
-        texto_ingresado=texto_ingresado,
+        categorias=categorias,
         asunto_ingresado=asunto_ingresado,
-        ticket_id=ticket_id
+        texto_ingresado=texto_ingresado,
+        probabilidades=None
     )
-
 
 if __name__ == "__main__":
     app.run(debug=True)

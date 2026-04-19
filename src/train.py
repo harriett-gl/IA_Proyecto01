@@ -1,77 +1,58 @@
-from pathlib import Path
-
+from datasets import load_dataset
 from src.preprocessing import limpiar_texto
 from src.vectorizer import construir_vocabulario, vectorizar_corpus
 from src.naive_bayes import NaiveBayes
+from src.kfold import evaluate_kfold
 
+dataset = load_dataset("bitext/Bitext-customer-support-llm-chatbot-training-dataset")
+data = dataset["train"]
 
-def entrenar_y_guardar():
-    textos = [
+textos = []
+etiquetas = []
 
-        # SOPORTE
-        "My internet is not working",
-        "I cannot connect to WiFi",
-        "The modem is failing",
-        "Mi internet no funciona",
-        "No tengo conexión wifi",
-        "El modem no responde",
-        "No puedo conectarme a la red",
-        "Se cayó el internet",
+for fila in data:
+    textos.append(limpiar_texto(fila["instruction"]))
+    etiquetas.append(fila["category"])
 
-        # CANCELACION
-        "I want to cancel my subscription",
-        "Please cancel my service",
-        "Close my account",
-        "Quiero cancelar mi servicio",
-        "Deseo cancelar mi suscripción",
-        "Ya no quiero el plan",
-        "Den de baja mi cuenta",
+print("Total registros:", len(textos))
 
-        # FACTURACION
-        "I was charged twice",
-        "Billing problem",
-        "My invoice is wrong",
-        "Me cobraron dos veces",
-        "Problema de facturación",
-        "La factura está incorrecta",
-        "Cobro no reconocido",
-        "Me llegó un cobro extra",
+classes = sorted(list(set(etiquetas)))
+print("Categorías:", classes)
 
-        # QUEJA
-        "Bad customer service",
-        "I am unhappy",
-        "Worst support ever",
-        "El servicio fue malo",
-        "Quiero poner una queja",
-        "Estoy inconforme",
-        "Muy mala atención",
-        "El agente fue grosero"
-    ]
+vocabulario = construir_vocabulario(textos)
+X = vectorizar_corpus(textos, vocabulario)
 
-    etiquetas = [
-        "soporte",
-        "cancelacion",
-        "facturacion",
-        "queja",
-    ]
+resultados = evaluate_kfold(X, etiquetas, vocabulario, classes, k=5)
+promedio = sum(r["accuracy"] for r in resultados) / len(resultados)
+print("Accuracy promedio:", round(promedio, 4))
 
-    documentos = [limpiar_texto(t) for t in textos]
+modelo = NaiveBayes()
+modelo.entrenar(X, etiquetas, vocabulario)
+modelo.guardar_modelo("model/naive_bayes_model.pkl")
 
-    vocabulario = construir_vocabulario(documentos)
-    X = vectorizar_corpus(documentos, vocabulario)
+print("Modelo entrenado y guardado correctamente.")
 
-    modelo = NaiveBayes()
-    modelo.entrenar(X, etiquetas, vocabulario)
+# categorías
+classes = sorted(list(set(etiquetas)))
+print("Categorías:", classes)
 
-    base_dir = Path(__file__).resolve().parent.parent
-    model_dir = base_dir / "model"
-    model_dir.mkdir(exist_ok=True)
+# vocabulario
+vocabulario = construir_vocabulario(textos)
 
-    ruta_modelo = model_dir / "naive_bayes_model.pkl"
-    modelo.guardar_modelo(ruta_modelo)
+# vectores
+X = vectorizar_corpus(textos, vocabulario)
 
-    print("Modelo entrenado en español e inglés.")
+# evaluar KFold
+resultados = evaluate_kfold(X, etiquetas, vocabulario, classes, k=5)
 
+promedio = sum(r["accuracy"] for r in resultados) / len(resultados)
+print("Accuracy promedio:", round(promedio, 4))
 
-if __name__ == "__main__":
-    entrenar_y_guardar()
+# entrenar modelo final
+modelo = NaiveBayes()
+modelo.entrenar(X, etiquetas, vocabulario)
+
+# guardar modelo
+modelo.guardar_modelo("model/naive_bayes_model.pkl")
+
+print("Modelo entrenado y guardado correctamente.")
